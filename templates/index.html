@@ -2,47 +2,61 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>🍅 Nhận diện bệnh & phân loại cà chua</title>
+  <title>Phát hiện bệnh và phân loại cà chua 🍅</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
 </head>
 <body>
+  <header>
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+    <h1>🌱 TomatoBear.AI - Hệ thống nông nghiệp thông minh</h1>
+  </header>
+
   <div class="container">
-    <h2>🍅 Nhận diện bệnh & cà chua chín / xanh</h2>
+    <div class="section">
+      <h2>📥 Tải ảnh từ máy</h2>
+      <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">📤 Phân tích ảnh</button>
+      </form>
+    </div>
 
-    <form method="POST" enctype="multipart/form-data">
-      <input type="file" name="image" accept="image/*" required>
-      <input type="submit" value="📤 Tải ảnh & Phân tích">
-    </form>
+    <div class="section">
+      <h2>📸 Hoặc chụp từ camera</h2>
+      <video id="video" width="300" autoplay></video>
+      <br>
+      <button onclick="capture()">📷 Chụp & Phân tích</button>
+      <canvas id="canvas" style="display:none;"></canvas>
 
-    <hr>
-
-    <h3>📷 Chụp ảnh bằng Webcam</h3>
-    <video id="video" autoplay></video><br>
-    <button onclick="takeSnapshot()">📸 Chụp ảnh</button>
-
-    <form method="POST">
-      <input type="hidden" name="cam_image" id="cam_image">
-      <input type="submit" value="Gửi ảnh từ camera">
-    </form>
-
-    <canvas id="canvas" style="display:none;"></canvas>
+      <form id="camForm" method="POST">
+        <input type="hidden" name="cam_image" id="cam_image">
+      </form>
+    </div>
   </div>
+
+  <footer>
+    <p>🐻 TomatoBear.AI &copy; 2025 - AgriTech Assistant</p>
+  </footer>
 
   <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
-    const camImageInput = document.getElementById('cam_image');
+    const camImage = document.getElementById('cam_image');
+    const camForm = document.getElementById('camForm');
 
+    // Mở webcam
     navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-      });
+      .then(stream => { video.srcObject = stream; })
+      .catch(err => { console.error("Không thể truy cập camera:", err); });
 
-    function takeSnapshot() {
+    // Chụp ảnh từ webcam và gửi đi
+    function capture() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       canvas.getContext('2d').drawImage(video, 0, 0);
-      camImageInput.value = canvas.toDataURL('image/jpeg');
+      const dataUrl = canvas.toDataURL('image/jpeg');
+      camImage.value = dataUrl;
+      camForm.submit();
     }
   </script>
 </body>
