@@ -1,83 +1,85 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import os
-import cv2
 import base64
-from werkzeug.utils import secure_filename
+from PIL import Image, ImageDraw
+import io
 from inference_sdk import InferenceHTTPClient
-from datetime import datetime
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
-OUTPUT_FOLDER = 'static/outputs'
+app.config['OUTPUT_FOLDER'] = 'static/outputs'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+os.makedirs(app.config['OUTPUT_FOLDER'], exist_ok=True)
 
-# Roboflow
+# Roboflow API
 CLIENT = InferenceHTTPClient(
-    api_url="https://detect.roboflow.com",
+    api_url="https://serverless.roboflow.com", # Corrected URL
     api_key="FQl2mDWElbti8IH5Ajwh"
 )
 MODEL_ID = "tomato-detection-q87hl/4"
 
-@app.route('/', methods=['GET', 'POST'])
+def draw_boxes(image_path, predictions):
+    image = Image.open(image_path).convert("RGB")
+    draw = ImageDraw.Draw(image)
+
+    for pred in predictions:
+        x, y, w, h = pred["x"], pred["y"], pred["width"], pred["height"]
+        x0, y0 = x - w / 2, y - h / 2
+        x1, y1 = x + w / 2, y + h / 2
+
+        draw.rectangle([x0, y0, x1, y1], outline="red", width=3)
+        draw.text((x0, y0 - 10), f"{pred['class']} ({pred['confidence']:.2f})", fill="red")
+
+    # Lưu ảnh kết quả ra thư mục outputs
+    output_filename = os.path.basename(image_path).replace(".jpg", "_result.jpg")
+    output_path = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
+    image.save(output_path)
+    return output_filename
+
+@app.route("/", methods=["GET", "POST"])
 def index():
-    if request.method == 'POST':
-        if 'image' in request.files and request.files['image'].filename != '':
-            file = request.files['image']
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-        elif 'cam_image' in request.form:
-            filename = f"camera_{datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if request.method == "POST":
+        # Nếu ảnh từ webcam
+        if 'cam_image' in request.form and request.form['cam_image']:
             data_url = request.form['cam_image']
-            encoded = data_url.split(',')[1]
-            with open(file_path, "wb") as f:
-                f.write(base64.b64decode(encoded))
+            header, encoded = data_url.split(",", 1)
+            binary_data = base64.b64decode(encoded)
+            image = Image.open(io.BytesIO(binary_data)).convert("RGB")
+
+            filename = "webcam.jpg"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image.save(filepath)
         else:
-            return "Không có ảnh hợp lệ!", 400
+            # Nếu upload từ máy
+            file = request.files["image"]
+            if file.filename == "":
+                return redirect(request.url)
+            filename = file.filename
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
 
+        # Gọi Roboflow API
         try:
-            result = CLIENT.infer(file_path, model_id=MODEL_ID)
+            result = CLIENT.infer(filepath, model_id=MODEL_ID)
         except Exception as e:
-            return f"Lỗi gọi Roboflow: {e}", 500
+            return f"Lỗi gọi API Roboflow: {e}"
 
-        # Vẽ khung và phân loại
-        image = cv2.imread(file_path)
-        diseases = []
-        tomatoes = []
+        predictions = result.get("predictions", [])
+        annotated_filename = draw_boxes(filepath, predictions)
 
-        for pred in result['predictions']:
-            x, y = int(pred['x']), int(pred['y'])
-            w, h = int(pred['width']), int(pred['height'])
-            label = pred['class']
+        # Phân loại ra cà chua và vùng bệnh
+        tomatoes = [p for p in predictions if p['class'] in ['ripe', 'unripe']]
+        diseases = [p for p in predictions if p['class'] not in ['ripe', 'unripe']]
 
-            if label in ['ripe', 'unripe']:
-                tomatoes.append(pred)
-                color = (0, 0, 255) if label == 'ripe' else (255, 255, 0)
-            else:
-                diseases.append(pred)
-                color = (0, 255, 0)
-
-            x1, y1 = x - w // 2, y - h // 2
-            x2, y2 = x + w // 2, y + h // 2
-
-            cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
-            cv2.putText(image, label, (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-
-        annotated = "annotated_" + filename
-        annotated_path = os.path.join(OUTPUT_FOLDER, annotated)
-        cv2.imwrite(annotated_path, image)
-
-        return render_template("result.html",
-                               result=result,
-                               filename=filename,
-                               annotated_filename=annotated,
-                               diseases=diseases,
-                               tomatoes=tomatoes)
+        return render_template(
+            "result.html",
+            annotated_filename=annotated_filename,
+            result=result,
+            tomatoes=tomatoes,
+            diseases=diseases
+        )
 
     return render_template("index.html")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
