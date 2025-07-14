@@ -2,26 +2,27 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Phát hiện cà chua</title>
+  <title>🍅 Nhận diện bệnh & phân loại cà chua</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
-    <h2>🍅 Nhận diện bệnh & phân loại cà chua</h2>
+    <h2>🍅 Nhận diện bệnh & cà chua chín / xanh</h2>
 
     <form method="POST" enctype="multipart/form-data">
       <input type="file" name="image" accept="image/*" required>
-      <input type="submit" value="Tải ảnh lên và phân tích">
+      <input type="submit" value="📤 Tải ảnh & Phân tích">
     </form>
 
     <hr>
-    <h3>📷 Chụp từ webcam</h3>
-    <video id="video" width="100%" autoplay></video><br>
+
+    <h3>📷 Chụp ảnh bằng Webcam</h3>
+    <video id="video" autoplay></video><br>
     <button onclick="takeSnapshot()">📸 Chụp ảnh</button>
 
     <form method="POST">
       <input type="hidden" name="cam_image" id="cam_image">
-      <input type="submit" value="Gửi ảnh chụp">
+      <input type="submit" value="Gửi ảnh từ camera">
     </form>
 
     <canvas id="canvas" style="display:none;"></canvas>
@@ -33,7 +34,9 @@
     const camImageInput = document.getElementById('cam_image');
 
     navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => { video.srcObject = stream; });
+      .then(stream => {
+        video.srcObject = stream;
+      });
 
     function takeSnapshot() {
       canvas.width = video.videoWidth;
