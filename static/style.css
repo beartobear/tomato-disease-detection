@@ -1,89 +1,140 @@
-* {
-  box-sizing: border-box;
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f2f9f1;
+  color: #333;
   margin: 0;
   padding: 0;
 }
 
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
-  color: #333;
-  min-height: 100vh;
-  padding: 30px;
+header {
+  background-color: #d0f0c0;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 4px solid #a3d977;
+  position: relative;
+}
+
+.logo {
+  height: 60px;
+  max-width: 100px;
+  object-fit: contain;
+  position: absolute;
+  top: 10px;
+  left: 20px;
+}
+
+header h1 {
+  font-size: 24px;
+  margin: 0;
+  color: #2e7d32;
 }
 
 .container {
-  max-width: 800px;
-  margin: auto;
-  background: white;
-  padding: 40px 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-h2, h3 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #2c3e50;
+.section {
+  margin-bottom: 30px;
+}
+
+.section h2 {
+  color: #388e3c;
+  margin-bottom: 15px;
+  border-left: 5px solid #c8e6c9;
+  padding-left: 10px;
 }
 
 input[type="file"],
 input[type="submit"],
 button {
   display: block;
-  margin: 15px auto;
-  padding: 12px 30px;
-  background-color: #2ecc71;
-  color: white;
+  margin: 10px auto;
+  padding: 10px 25px;
   font-size: 16px;
+  background-color: #66bb6a;
+  color: white;
   border: none;
   border-radius: 8px;
-  transition: background-color 0.3s ease;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 input[type="submit"]:hover,
 button:hover {
-  background-color: #27ae60;
+  background-color: #4caf50;
 }
 
-video, img {
+video {
   display: block;
-  margin: 20px auto;
+  margin: 0 auto 10px;
   max-width: 100%;
   border-radius: 10px;
-  border: 3px solid #ccc;
+  border: 2px solid #a5d6a7;
 }
 
-ul {
-  list-style-type: none;
-  padding-left: 0;
-  margin-top: 10px;
-}
-
-li {
-  background-color: #f1f8f9;
-  margin: 10px 0;
-  padding: 12px 20px;
-  border-left: 6px solid #3498db;
-  border-radius: 6px;
-  font-size: 15px;
-}
-
-hr {
-  margin: 30px 0;
-  border: 0;
-  height: 1px;
-  background: #ccc;
-}
-
-a {
-  display: block;
+footer {
+  margin-top: 50px;
+  padding: 20px;
+  background-color: #dcedc8;
   text-align: center;
-  margin-top: 25px;
-  color: #3498db;
-  text-decoration: none;
+  font-size: 14px;
+  color: #5d6d49;
 }
 
-a:hover {
-  text-decoration: underline;
+/* --------- Responsive: Mobile-first --------- */
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 18px;
+    padding-top: 70px;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .logo {
+    height: 50px;
+    max-width: 80px;
+    top: 10px;
+    left: 10px;
+  }
+
+  .container {
+    padding: 10px;
+    margin: 10px;
+  }
+
+  .card {
+    font-size: 14px;
+    padding: 10px;
+    margin: 5px auto;
+  }
+
+  .section h2 {
+    font-size: 16px;
+    padding-left: 5px;
+  }
+
+  input[type="file"],
+  input[type="submit"],
+  button {
+    font-size: 14px;
+    padding: 8px 18px;
+    width: 90%;
+    margin: 8px auto;
+  }
+
+  video {
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  .back-btn {
+    font-size: 14px;
+    padding: 8px 18px;
+    width: 90%;
+  }
 }
