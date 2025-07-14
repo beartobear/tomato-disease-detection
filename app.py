@@ -12,7 +12,7 @@ OUTPUT_FOLDER = 'static/outputs'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# Cấu hình Roboflow
+# Roboflow
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
     api_key="FQl2mDWElbti8IH5Ajwh"
@@ -22,14 +22,11 @@ MODEL_ID = "tomato-detection-q87hl/4"
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        # Trường hợp upload từ file
         if 'image' in request.files and request.files['image'].filename != '':
             file = request.files['image']
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-
-        # Trường hợp ảnh từ webcam (base64)
         elif 'cam_image' in request.form:
             filename = f"camera_{datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -37,34 +34,48 @@ def index():
             encoded = data_url.split(',')[1]
             with open(file_path, "wb") as f:
                 f.write(base64.b64decode(encoded))
-
         else:
             return "Không có ảnh hợp lệ!", 400
 
-        # Gửi ảnh đến Roboflow
         try:
             result = CLIENT.infer(file_path, model_id=MODEL_ID)
         except Exception as e:
-            return f"Lỗi gọi API Roboflow: {e}", 500
+            return f"Lỗi gọi Roboflow: {e}", 500
 
-        # Vẽ bounding box
+        # Vẽ khung và phân loại
         image = cv2.imread(file_path)
+        diseases = []
+        tomatoes = []
+
         for pred in result['predictions']:
             x, y = int(pred['x']), int(pred['y'])
             w, h = int(pred['width']), int(pred['height'])
-            class_name = pred['class']
+            label = pred['class']
+
+            if label in ['ripe', 'unripe']:
+                tomatoes.append(pred)
+                color = (0, 0, 255) if label == 'ripe' else (255, 255, 0)
+            else:
+                diseases.append(pred)
+                color = (0, 255, 0)
+
             x1, y1 = x - w // 2, y - h // 2
             x2, y2 = x + w // 2, y + h // 2
-            cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(image, class_name, (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-        # Lưu ảnh kết quả
-        annotated_filename = "annotated_" + filename
-        annotated_path = os.path.join(OUTPUT_FOLDER, annotated_filename)
+            cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(image, label, (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+        annotated = "annotated_" + filename
+        annotated_path = os.path.join(OUTPUT_FOLDER, annotated)
         cv2.imwrite(annotated_path, image)
 
-        return render_template("result.html", result=result, filename=filename, annotated_filename=annotated_filename)
+        return render_template("result.html",
+                               result=result,
+                               filename=filename,
+                               annotated_filename=annotated,
+                               diseases=diseases,
+                               tomatoes=tomatoes)
 
     return render_template("index.html")
 
