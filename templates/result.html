@@ -2,27 +2,36 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Kết quả phát hiện</title>
+  <title>Kết quả</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
-    <h2>Ảnh có khung nhận diện bệnh:</h2>
-    <img src="{{ url_for('static', filename='outputs/' + annotated_filename) }}" alt="Kết quả">
+    <h2>📸 Ảnh kết quả:</h2>
+    <img src="{{ url_for('static', filename='outputs/' + annotated_filename) }}">
 
-    <h2>Chi tiết phát hiện:</h2>
-    {% if result['predictions'] %}
+    <h3>🥀 Bệnh phát hiện:</h3>
+    {% if diseases %}
       <ul>
-        {% for pred in result['predictions'] %}
-          <li>
-            <strong>Bệnh:</strong> {{ pred['class'] }}<br>
-            <strong>Độ tự tin:</strong> {{ "%.2f"|format(pred['confidence']) }}
-          </li>
+        {% for d in diseases %}
+          <li>Bệnh: {{ d['class'] }}, độ tin cậy: {{ "%.2f"|format(d['confidence']) }}</li>
         {% endfor %}
       </ul>
     {% else %}
-      <p>🚫 Không phát hiện được bệnh nào!</p>
+      <p>✅ Không phát hiện bệnh!</p>
     {% endif %}
+
+    <h3>🍅 Phân loại quả:</h3>
+    {% if tomatoes %}
+      <ul>
+        {% for t in tomatoes %}
+          <li>{{ t['class']|capitalize }} – độ tin cậy: {{ "%.2f"|format(t['confidence']) }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>🚫 Không phát hiện quả cà chua!</p>
+    {% endif %}
+
     <br><a href="/">← Quay lại</a>
   </div>
 </body>
