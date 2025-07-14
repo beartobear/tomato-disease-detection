@@ -2,37 +2,72 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Kết quả</title>
+  <title>Kết quả phân tích 🍅</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='logo.png') }}">
 </head>
 <body>
+  <header>
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+    <h1>🌿 Kết quả phân tích hình ảnh cà chua</h1>
+  </header>
+
   <div class="container">
-    <h2>📸 Ảnh kết quả:</h2>
-    <img src="{{ url_for('static', filename='outputs/' + annotated_filename) }}">
+    <!-- Ảnh đã phân tích -->
+    <div class="section">
+      <h2>📷 Ảnh sau khi phân tích:</h2>
+      <img src="{{ url_for('static', filename='outputs/' + annotated_filename) }}"
+           alt="Ảnh phân tích"
+           style="max-width: 100%; border-radius: 12px; border: 2px solid #c8e6c9;">
+    </div>
 
-    <h3>🥀 Bệnh phát hiện:</h3>
-    {% if diseases %}
-      <ul>
-        {% for d in diseases %}
-          <li>Bệnh: {{ d['class'] }}, độ tin cậy: {{ "%.2f"|format(d['confidence']) }}</li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>✅ Không phát hiện bệnh!</p>
-    {% endif %}
+    <!-- Thống kê -->
+    <div class="section">
+      <h2>📊 Thống kê tổng hợp</h2>
+      <div class="stats-grid">
+        <div class="card">🔍 Tổng phát hiện: <strong>{{ result['predictions'] | length }}</strong></div>
+        <div class="card">🍅 Cà chua chín (ripe): <strong>{{ tomatoes | selectattr("class", "equalto", "ripe") | list | length }}</strong></div>
+        <div class="card">🥬 Cà chua xanh (unripe): <strong>{{ tomatoes | selectattr("class", "equalto", "unripe") | list | length }}</strong></div>
+        <div class="card">🦠 Vùng bệnh: <strong>{{ diseases | length }}</strong></div>
+      </div>
+    </div>
 
-    <h3>🍅 Phân loại quả:</h3>
-    {% if tomatoes %}
-      <ul>
-        {% for t in tomatoes %}
-          <li>{{ t['class']|capitalize }} – độ tin cậy: {{ "%.2f"|format(t['confidence']) }}</li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>🚫 Không phát hiện quả cà chua!</p>
-    {% endif %}
+    <!-- Chi tiết bệnh -->
+    <div class="section">
+      <h2>🦠 Chi tiết bệnh</h2>
+      {% if diseases %}
+        <ul class="details-list">
+          {% for d in diseases %}
+            <li><strong>{{ d['class'] }}</strong> – độ tin cậy: {{ "%.2f"|format(d['confidence']) }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="no-result">✅ Không phát hiện bệnh nào!</p>
+      {% endif %}
+    </div>
 
-    <br><a href="/">← Quay lại</a>
+    <!-- Chi tiết cà chua -->
+    <div class="section">
+      <h2>🍅 Chi tiết cà chua</h2>
+      {% if tomatoes %}
+        <ul class="details-list">
+          {% for t in tomatoes %}
+            <li>{{ t['class'] | capitalize }} – độ tin cậy: {{ "%.2f"|format(t['confidence']) }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="no-result">🚫 Không phát hiện quả cà chua!</p>
+      {% endif %}
+    </div>
+
+    <!-- Quay lại -->
+    <div class="section" style="text-align:center;">
+      <a href="/" class="back-btn">← Quay lại trang chính</a>
+    </div>
   </div>
+
+  <footer>
+    <p>🐻 TomatoBear.AI &copy; 2025 - AgriTech Assistant</p>
+  </footer>
 </body>
 </html>
