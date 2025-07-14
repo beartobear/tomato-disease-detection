@@ -32,12 +32,12 @@ git clone https://github.com/beartobear/tomato-disease-detection.git
 cd tomato-disease-detection
 pip install -r requirements.txt
 ```
-bước 1:
+- bước 1:
 python -m venv venv
 .\venv\Scripts\activate
-bước 2:
+- bước 2:
 pip install -r requirements.txt
 pip install flask inference-sdk werkzeug
-bước 3:
+- bước 3:
 python app.py
 
