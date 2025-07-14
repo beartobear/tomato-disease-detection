@@ -1,0 +1,4 @@
+flask
+inference-sdk
+opencv-python
+werkzeug

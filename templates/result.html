@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Kết quả phát hiện</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Ảnh có khung nhận diện bệnh:</h2>
+    <img src="{{ url_for('static', filename='outputs/' + annotated_filename) }}" alt="Kết quả">
+
+    <h2>Chi tiết phát hiện:</h2>
+    {% if result['predictions'] %}
+      <ul>
+        {% for pred in result['predictions'] %}
+          <li>
+            <strong>Bệnh:</strong> {{ pred['class'] }}<br>
+            <strong>Độ tự tin:</strong> {{ "%.2f"|format(pred['confidence']) }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>🚫 Không phát hiện được bệnh nào!</p>
+    {% endif %}
+    <br><a href="/">← Quay lại</a>
+  </div>
+</body>
+</html>

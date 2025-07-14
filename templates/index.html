@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Phát hiện sâu bệnh cà chua</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Phát hiện sâu bệnh trên lá cà chua</h2>
+
+    <!-- Upload ảnh -->
+    <form method="POST" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/*">
+      <input type="submit" value="Phân tích ảnh">
+    </form>
+
+    <hr>
+
+    <!-- Webcam -->
+    <h3>📷 Chụp từ Camera:</h3>
+    <video id="video" width="100%" autoplay></video>
+    <br>
+    <button onclick="takeSnapshot()">📸 Chụp ảnh</button>
+
+    <form id="camForm" method="POST">
+      <input type="hidden" name="cam_image" id="cam_image">
+      <input type="submit" value="Gửi ảnh từ camera">
+    </form>
+
+    <canvas id="canvas" style="display:none;"></canvas>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const camImageInput = document.getElementById('cam_image');
+
+    // Bật camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      });
+
+    function takeSnapshot() {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataURL = canvas.toDataURL('image/jpeg');
+      camImageInput.value = dataURL;
+    }
+  </script>
+</body>
+</html>
